@@ -18,7 +18,8 @@ namespace dbd_screenshot
         private readonly ImageResizer resizer = new();
         private readonly Uploader uploader = new();
 
-        private readonly string windowName = "DeadByDaylight-Win64-Shipping";
+        private readonly string steamWindowName = "DeadByDaylight-Win64-Shipping";
+        private readonly string epicWindowName = "DeadByDaylight-EGS-Shipping";
 
         public MainPresenter(IMainView view)
         {
@@ -110,11 +111,22 @@ namespace dbd_screenshot
         private IntPtr GetDbdWindow()
         {
             worker.ReportProgress((int)ScreenshotSteps.WINDOW, getLog(Status.LOADING));
-            IntPtr processHandle = processWindowHelper.GetWindowHandleByProcessName(windowName);
-            if(processHandle == IntPtr.Zero)
-                worker.ReportProgress((int)ScreenshotSteps.WINDOW, getLog(Status.ERROR, "Unable to get dbd window"));
-            else
-                worker.ReportProgress((int)ScreenshotSteps.WINDOW, getLog(Status.COMPLETE));
+            // steam
+            IntPtr processHandle = processWindowHelper.GetWindowHandleByProcessName(steamWindowName);
+            if(processHandle != IntPtr.Zero)
+            {
+                worker.ReportProgress((int)ScreenshotSteps.WINDOW, getLog(Status.COMPLETE, "Steam"));
+                return processHandle;
+            }
+            // epic
+            processHandle = processWindowHelper.GetWindowHandleByProcessName(epicWindowName);
+            if (processHandle != IntPtr.Zero)
+            {
+                worker.ReportProgress((int)ScreenshotSteps.WINDOW, getLog(Status.COMPLETE, "Epic"));
+                return processHandle;
+            }
+            // Did not work
+            worker.ReportProgress((int)ScreenshotSteps.WINDOW, getLog(Status.ERROR, "Unable to get dbd window")); 
             return processHandle;
         }
 
